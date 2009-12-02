@@ -16,7 +16,7 @@ implementation
         color = 0;
         state = 0;
         call Timer.startPeriodic(2000);
-        call BlinkM.set_fade_speed(50);
+        call BlinkM.set_fade_speed(20);
     }
 
 
