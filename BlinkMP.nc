@@ -226,7 +226,6 @@ implementation
                         post set_rgb_task();
                         break;
                     case 1:
-
                         post fade_to_rgb_task();
                         break; 
                     case 2:
