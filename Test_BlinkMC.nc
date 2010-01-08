@@ -51,7 +51,7 @@ implementation
 
     event void BlinkM.set_fade_speedDone(error_t error)
     {
-        call BlinkM.fade_to_rgb_color(0xff,0x00,0x00);
+        call BlinkM.fade_to_hsb_color(172,0xff,0xff);
     }
 
     event void BlinkM.fade_to_hsb_colorDone(error_t error)
