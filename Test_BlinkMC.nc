@@ -16,7 +16,7 @@ implementation
         color = 0;
         state = 0;
         call Timer.startPeriodic(2000);
-        call BlinkM.set_fade_speed(20);
+        call BlinkM.set_fade_speed(10);
     }
 
 
@@ -24,12 +24,12 @@ implementation
     {
         if(state == 0)
         {
-            call BlinkM.fade_to_rgb_color(0xff,0x00,0x00);
+            call BlinkM.fade_to_hsb_color(43,0xff,0xff);
             
         }
         else if(state == 1)
         {
-            call BlinkM.fade_to_rgb_color(0x00,0xff,0x00);
+            call BlinkM.fade_to_hsb_color(172,0xff,0xff);
         }
     }
 
@@ -56,6 +56,11 @@ implementation
 
     event void BlinkM.fade_to_hsb_colorDone(error_t error)
     {
+        if(state == 0)
+            state = 1;
+        else if(state == 1)
+            state = 0;
+
     }
 
 }

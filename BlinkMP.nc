@@ -148,7 +148,7 @@ implementation
         }
 
         two_bit_data[0] = 'f';
-        two_bit_data[1] = 255;
+        two_bit_data[1] = speed;
         call I2CResource.request();
         return SUCCESS;
     }
