@@ -94,6 +94,9 @@ implementation {
       }
 
       rcm->counter = counter;
+      rcm->red = 0x00;
+      rcm->green = 0x00;
+      rcm->blue = 0xff;
       if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS) {
 	dbg("RadioCountToLedsC", "RadioCountToLedsC: packet sent.\n", counter);	
 	locked = TRUE;
@@ -112,7 +115,7 @@ implementation {
 	//call Leds.led0On();
       if(rcm->counter >= 1 && rcm->counter <= 10)
       {
-         call BlinkM.fade_to_rgb_color(0xff,0x00,0x00);
+         call BlinkM.fade_to_rgb_color(rcm->red,rcm->green,rcm->blue);
          call Leds.led0On();
       }
       //else {
