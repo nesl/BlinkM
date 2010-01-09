@@ -32,6 +32,9 @@
 
 typedef nx_struct radio_count_msg {
   nx_uint16_t counter;
+  nx_uint16_t red;
+  nx_uint16_t green;
+  nx_uint16_t blue;
 } radio_count_msg_t;
 
 enum {
