@@ -69,7 +69,7 @@ implementation {
 
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
-      call MilliTimer.startPeriodic(2000);
+// call MilliTimer.startPeriodic(2000);
     }
     else {
       call AMControl.start();
@@ -113,18 +113,9 @@ implementation {
       radio_count_msg_t* rcm = (radio_count_msg_t*)payload;
      // if (rcm->counter & 0x1) {
 	//call Leds.led0On();
-      if(rcm->counter >= 1 && rcm->counter <= 10)
-      {
-         call BlinkM.fade_to_rgb_color(rcm->red,rcm->green,rcm->blue);
-         call Leds.led0On();
-      }
+        call BlinkM.fade_to_rgb_color(rcm->red,rcm->green,rcm->blue);
       //else {
 	//call Leds.led0Off();
-     else if(rcm->counter > 10)
-     {
-        call BlinkM.fade_to_rgb_color(0x00,0xff,0x00);
-      
-     }
      // }
       //if (rcm->counter & 0x2) {
 	//call Leds.led1On();
