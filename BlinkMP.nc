@@ -37,6 +37,18 @@ implementation
         four_bit_data[2] = green;
         four_bit_data[3] = blue;
     }
+
+    error_t check_state()
+    {
+        uint8_t dup_state;
+        atomic
+        {
+            dup_state = state;
+        }
+        if(dup_state != 255)
+            return FAIL;
+        return SUCCESS;
+    }
     
 
     /*****************************************************
@@ -46,15 +58,8 @@ implementation
     /* This command sets the BlinkM to an RGB color immediately */ 
     command error_t BlinkM.set_rgb_color(uint8_t red, uint8_t green, uint8_t blue)
     {
-        uint8_t dup_state;
-        atomic
-        {
-            dup_state = state;
-        }
-        if(dup_state != 255)
-        {
-            return FAIL;
-        }
+        if(check_state() == FAIL)
+           return FAIL; 
         atomic
         {
             state = 0; 
@@ -68,15 +73,8 @@ implementation
     /* This command returns the current RGB color */ 
     command error_t BlinkM.get_rgb_color()
     {
-        uint8_t dup_state;
-        atomic
-        {
-            dup_state = state;
-        }
-        if(dup_state != 255)
-        {
-            return FAIL;
-        }
+        if(check_state() == FAIL)
+           return FAIL; 
         atomic
         {
             state = 5;
@@ -90,15 +88,8 @@ implementation
      * color specified */ 
     command error_t BlinkM.fade_to_rgb_color(uint8_t red, uint8_t green, uint8_t blue)
     {
-        uint8_t dup_state;
-        atomic
-        {
-            dup_state = state;
-        }
-        if(dup_state != 255)
-        {
-            return FAIL;
-        }
+        if(check_state() == FAIL)
+           return FAIL; 
         atomic
         {
             state = 1; 
@@ -113,15 +104,8 @@ implementation
      * (Hue, Saturation, Brightness) color specified.*/ 
     command error_t BlinkM.fade_to_hsb_color(uint8_t hue, uint8_t sat, uint8_t bri)
     {
-        uint8_t dup_state;
-        atomic
-        {
-            dup_state = state;
-        }
-        if(dup_state != 255)
-        {
+        if(check_state() == FAIL)
             return FAIL;
-        }
         atomic
         {
             state = 2; 
@@ -135,12 +119,7 @@ implementation
     /* This command sets how fast color fading happens */ 
     command error_t BlinkM.set_fade_speed(uint8_t speed)
     {
-        uint8_t dup_state;
-        atomic
-        {
-            dup_state = state;
-        }
-        if(dup_state != 255)
+        if(check_state() == FAIL)
             return FAIL;
         atomic
         {
@@ -151,6 +130,21 @@ implementation
         two_bit_data[1] = speed;
         call I2CResource.request();
         return SUCCESS;
+    }
+
+    command error_t BlinkM.stop_script()
+    {
+        if(check_state() == FAIL)
+            return FAIL;
+        atomic
+        {
+            state = 7;
+        }
+
+        one_bit_data[0] = 'o';
+        call I2CResource.request();
+        return SUCCESS; 
+
     }
 
     /*****************************************************
@@ -255,6 +249,14 @@ implementation
                     signal BlinkM.get_rgb_colorDone(FAIL,0x00,0x00,0x00);
                 }
                 break;
+            case 7:
+                call I2CResource.release();
+                atomic
+                {
+                    state = 255;
+                }
+                signal BlinkM.stop_scriptDone(SUCCESS);
+                break;
         }
 
     }
@@ -294,6 +296,7 @@ implementation
                 }
                 break;
             case 5: 
+            case 7:
                 if(call I2CPacket.write(I2C_START|I2C_STOP, BlinkM_Addr,1,
                             one_bit_data) != SUCCESS)
                 {
@@ -302,7 +305,10 @@ implementation
                     {
                         state = 255;
                     }
-                    signal BlinkM.get_rgb_colorDone(FAIL,0x00,0x00,0x00);
+                    if(dup_state == 5)
+                        signal BlinkM.get_rgb_colorDone(FAIL,0x00,0x00,0x00);
+                    else if(dup_state == 7)
+                        signal BlinkM.stop_scriptDone(FAIL);
                 }
                 break;
             case 6:
@@ -317,6 +323,7 @@ implementation
                     signal BlinkM.set_fade_speedDone(FAIL);
                 }
                 break;
+
         }
     }
 }

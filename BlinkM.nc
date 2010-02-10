@@ -29,4 +29,9 @@ interface BlinkM
             uint8_t bri);
 
     event void fade_to_hsb_colorDone(error_t error);
+
+    /* This command tells BlinkM to stop playing a script */ 
+    command error_t stop_script();
+
+    event void stop_scriptDone(error_t error);
 }
