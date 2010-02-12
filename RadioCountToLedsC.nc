@@ -67,64 +67,70 @@ implementation {
     call AMControl.start();
   }
 
-  event void AMControl.startDone(error_t err) {
-    if (err == SUCCESS) {
-// call MilliTimer.startPeriodic(2000);
+  event void AMControl.startDone(error_t err) 
+  {
+    if (err == SUCCESS) 
+    {
+        // call MilliTimer.startPeriodic(2000);
     }
-    else {
+    else 
+    {
       call AMControl.start();
     }
   }
 
-  event void AMControl.stopDone(error_t err) {
+  event void AMControl.stopDone(error_t err) 
+  {
     // do nothing
   }
   
-  event void MilliTimer.fired() {
+  event void MilliTimer.fired() 
+  {
     counter++;
     counter = counter%20;
     dbg("RadioCountToLedsC", "RadioCountToLedsC: timer fired, counter is %hu.\n", counter);
-    if (locked) {
+    if (locked) 
+    {
       return;
     }
-    else {
+    else 
+    {
       radio_count_msg_t* rcm = (radio_count_msg_t*)call Packet.getPayload(&packet, sizeof(radio_count_msg_t));
-      if (rcm == NULL) {
-	return;
+      if (rcm == NULL) 
+      {
+	    return;
       }
 
       rcm->counter = counter;
       rcm->red = 0x00;
       rcm->green = 0x00;
       rcm->blue = 0xff;
-      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS) {
-	dbg("RadioCountToLedsC", "RadioCountToLedsC: packet sent.\n", counter);	
-	locked = TRUE;
+      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS) 
+      {
+	    dbg("RadioCountToLedsC", "RadioCountToLedsC: packet sent.\n", counter);	
+	    locked = TRUE;
       }
     }
   }
 
   event message_t* Receive.receive(message_t* bufPtr, 
-				   void* payload, uint8_t len) {
+				   void* payload, uint8_t len) 
+  {
       call Leds.led2Toggle();
     dbg("RadioCountToLedsC", "Received packet of length %hhu.\n", len);
     if (len != sizeof(radio_count_msg_t)) {return bufPtr;}
-    else {
+    else 
+    {
       radio_count_msg_t* rcm = (radio_count_msg_t*)payload;
-     // if (rcm->counter & 0x1) {
-	//call Leds.led0On();
-        call BlinkM.fade_to_rgb_color(rcm->red,rcm->green,rcm->blue);
-      //else {
-	//call Leds.led0Off();
-     // }
-      //if (rcm->counter & 0x2) {
-	//call Leds.led1On();
+      call BlinkM.fade_to_rgb_color(rcm->red,rcm->green,rcm->blue);
       return bufPtr;
     }
   }
 
-  event void AMSend.sendDone(message_t* bufPtr, error_t error) {
-    if (&packet == bufPtr) {
+  event void AMSend.sendDone(message_t* bufPtr, error_t error) 
+  {
+    if (&packet == bufPtr) 
+    {
       locked = FALSE;
     }
   }
@@ -149,6 +155,10 @@ implementation {
       //do nothing
   }
 
+  event void BlinkM.stop_scriptDone(error_t error)
+  {
+      //do nothing
+  }
   async event void BlinkM.get_rgb_colorDone(error_t error, uint8_t red, uint8_t green, uint8_t blue)
   {
       //do nothing
