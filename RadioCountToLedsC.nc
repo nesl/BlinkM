@@ -63,8 +63,9 @@ implementation {
   bool locked;
   uint16_t counter = 0;
   
-  event void Boot.booted() {
-    call AMControl.start();
+  event void Boot.booted() 
+  {
+    call BlinkM.stop_script();
   }
 
   event void AMControl.startDone(error_t err) 
@@ -157,7 +158,7 @@ implementation {
 
   event void BlinkM.stop_scriptDone(error_t error)
   {
-      //do nothing
+    call AMControl.start();
   }
   async event void BlinkM.get_rgb_colorDone(error_t error, uint8_t red, uint8_t green, uint8_t blue)
   {
