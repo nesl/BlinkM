@@ -32,11 +32,17 @@
 
 typedef nx_struct radio_count_msg {
   nx_uint16_t counter;
+<<<<<<< HEAD:RadioCountToLeds.h
   nx_uint16_t comm;     //stands for command
   nx_uint16_t red;
   nx_uint16_t green;
   nx_uint16_t blue;
   nx_uint16_t mote;
+=======
+  nx_uint16_t red;
+  nx_uint16_t green;
+  nx_uint16_t blue;
+>>>>>>> 1f8274fd3bdbd5d139b444ec6095c497e40d2fe6:RadioCountToLeds.h
 } radio_count_msg_t;
 
 enum {
