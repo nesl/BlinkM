@@ -32,6 +32,7 @@
 #include "Timer.h"
 #include "RadioCountToLeds.h"
  
+#define ALL_MOTES 255
 /**
  * Implementation of the RadioCountToLeds application. RadioCountToLeds 
  * maintains a 4Hz counter, broadcasting its value in an AM packet 
@@ -49,10 +50,8 @@ module RadioCountToLedsC @safe() {
     interface Boot;
     interface Receive;
     interface AMSend;
-    interface Timer<TMilli> as MilliTimer;
     interface SplitControl as AMControl;
     interface Packet;
-
     interface BlinkM;
   }
 }
@@ -85,46 +84,38 @@ implementation {
     // do nothing
   }
   
-  event void MilliTimer.fired() 
-  {
-    counter++;
-    counter = counter%20;
-    dbg("RadioCountToLedsC", "RadioCountToLedsC: timer fired, counter is %hu.\n", counter);
-    if (locked) 
-    {
-      return;
-    }
-    else 
-    {
-      radio_count_msg_t* rcm = (radio_count_msg_t*)call Packet.getPayload(&packet, sizeof(radio_count_msg_t));
-      if (rcm == NULL) 
-      {
-	    return;
-      }
-
-      rcm->counter = counter;
-      rcm->red = 0x00;
-      rcm->green = 0x00;
-      rcm->blue = 0xff;
-      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS) 
-      {
-	    dbg("RadioCountToLedsC", "RadioCountToLedsC: packet sent.\n", counter);	
-	    locked = TRUE;
-      }
-    }
-  }
-
   event message_t* Receive.receive(message_t* bufPtr, 
 				   void* payload, uint8_t len) 
   {
-      call Leds.led2Toggle();
+    call Leds.led2Toggle();
     dbg("RadioCountToLedsC", "Received packet of length %hhu.\n", len);
     if (len != sizeof(radio_count_msg_t)) {return bufPtr;}
     else 
     {
-      radio_count_msg_t* rcm = (radio_count_msg_t*)payload;
-      call BlinkM.fade_to_rgb_color(rcm->red,rcm->green,rcm->blue);
-      return bufPtr;
+        radio_count_msg_t* rcm = (radio_count_msg_t*)payload;
+        if(rcm->mote == TOS_NODE_ID || rcm->mote == ALL_MOTES)
+        {
+            switch(rcm->comm)
+            { 
+                case 0:   //go to rgb color now
+                    call BlinkM.set_rgb_color(rcm->red,rcm->green,rcm->blue);
+                    break;
+                case 1:   //fade to rgb color
+                    call BlinkM.fade_to_rgb_color(rcm->red,rcm->green,rcm->blue);
+                    break;
+                case 2:   //fade to hsb color
+                    call BlinkM.fade_to_hsb_color(rcm->red,rcm->green,rcm->blue);
+                    break;
+                case 3:   //stop playing the script
+                    call BlinkM.stop_script();
+                    break;
+                case 4:   //set the fade speed
+                    call BlinkM.set_fade_speed(rcm->red);
+                    break;
+              
+            }
+        }
+        return bufPtr;
     }
   }
 
@@ -165,7 +156,3 @@ implementation {
       //do nothing
   }
 }
-
-
-
-

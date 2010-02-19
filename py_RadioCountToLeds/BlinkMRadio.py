@@ -28,9 +28,6 @@ class BlinkMRadio:
         self.tos_source = self.mif.addSource(motestring)
         self.mif.addListener(self, RadioCountMsg.RadioCountMsg)
 
-
-        bmsg = RadioCountMsg.RadioCountMsg()
-        bmsg.set_counter(100)
         toggle = 0
 
         while 1:
@@ -38,18 +35,27 @@ class BlinkMRadio:
             time.sleep(2)
             if toggle == 0:
                 red = 255
-                green = 0
-                blue = 0
+                green = 255
+                blue = 255
                 toggle = 1
             else:
                 red = 0
                 green = 255
                 blue = 0
                 toggle = 0
-            bmsg.set_red(red)
-            bmsg.set_green(green)
-            bmsg.set_blue(blue)
-            self.mif.sendMsg(self.tos_source, 0xFFFF, bmsg.get_amType(), 4001, bmsg)
+            self.set_output(1,red,green,blue,255)
+
+    def set_output(self,comm,red,green,blue,mote):
+        bmsg = RadioCountMsg.RadioCountMsg()
+        bmsg.set_counter(100)
+        bmsg.set_comm(1);
+        bmsg.set_red(red)
+        bmsg.set_green(green)
+        bmsg.set_blue(blue)
+        bmsg.set_mote(255);
+        self.mif.sendMsg(self.tos_source, 0xFFFF, bmsg.get_amType(), 4001, bmsg)
+
+
 
     def receive(self, src, msg):
         """ This is the registered listener function for TinyOS messages.

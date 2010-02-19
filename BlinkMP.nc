@@ -172,6 +172,11 @@ implementation
         signal BlinkM.fade_to_hsb_colorDone(SUCCESS);
     }
 
+    task void stop_script_task()
+    {
+        signal BlinkM.stop_scriptDone(SUCCESS);
+    }
+
     /*****************************************************
                             Events  
     *****************************************************/
@@ -254,7 +259,7 @@ implementation
                 {
                     state = 255;
                 }
-                signal BlinkM.stop_scriptDone(SUCCESS);
+                post stop_script_task();
                 break;
         }
 
