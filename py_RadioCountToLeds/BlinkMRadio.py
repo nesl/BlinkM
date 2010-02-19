@@ -28,7 +28,6 @@ class BlinkMRadio:
         self.tos_source = self.mif.addSource(motestring)
         self.mif.addListener(self, RadioCountMsg.RadioCountMsg)
 
-<<<<<<< HEAD:py_RadioCountToLeds/BlinkMRadio.py
         toggle = 0
 
         while 1:
@@ -58,17 +57,6 @@ class BlinkMRadio:
 
 
 
-=======
-        time.sleep(1)
-
-        bmsg = RadioCountMsg.RadioCountMsg()
-        bmsg.set_red(255)
-        bmsg.set_green(0)
-        bmsg.set_blue(0)
-        bmsg.set_counter(100)
-        self.mif.sendMsg(self.tos_source, 0xFFFF, bmsg.get_amType(), 4001, bmsg)
-
->>>>>>> 1f8274fd3bdbd5d139b444ec6095c497e40d2fe6:py_RadioCountToLeds/BlinkMRadio.py
     def receive(self, src, msg):
         """ This is the registered listener function for TinyOS messages.
         """
