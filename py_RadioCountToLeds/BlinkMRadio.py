@@ -8,6 +8,7 @@ parameters:
 import sys
 import time
 import signal
+import serial
 
 # import msg from parent directory
 sys.path.append("..")
@@ -27,23 +28,68 @@ class BlinkMRadio:
         self.mif = MoteIF.MoteIF()
         self.tos_source = self.mif.addSource(motestring)
         self.mif.addListener(self, RadioCountMsg.RadioCountMsg)
-
-        toggle = 0
+        power_range = 11000
+        num_colors = 7
+        color_width= power_range/num_colors
+        print "color_width: ",color_width
+        ser = serial.Serial('/dev/ttyUSB2', 115200, timeout=1)
+        ser.write('#C,W,18,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1;')
+        ser.write('#L,W,3,E,1,1;')
 
         while 1:
 
-            time.sleep(2)
-            if toggle == 0:
-                red = 255
-                green = 255
-                blue = 255
-                toggle = 1
-            else:
-                red = 0
-                green = 255
-                blue = 0
-                toggle = 0
-            self.set_output(1,red,green,blue,255)
+            data = ser.readline()
+            data = data.strip().split(',')
+            data = data[3:6]
+            if len(data) == 3:
+                power = int(data[0])
+                print data[0]
+                try:
+                    if(power < color_width):
+                        red = 0xff
+                        green = 0x00
+                        blue = 0x00
+                    elif(power < 2*color_width and power >= color_width):
+                        red = 0xff
+                        green = 0xa5
+                        blue = 0x00
+                    elif(power < 3*color_width and power >=
+                            2*color_width):
+                        red = 0xff
+                        green = 0xff
+                        blue = 0x00
+                    elif(power < 4*color_width and power >=
+                            3*color_width):
+                        red = 0x00
+                        green = 0x80
+                        blue = 0x00
+                    elif(power < 5*color_width and power >=
+                            4*color_width):
+                        red = 0x00
+                        green = 0x00
+                        blue = 0xff
+                    elif(power < 6*color_width and power >=
+                            5*color_width):
+                        red = 0x4b
+                        green = 0x00
+                        blue = 0x82
+                    #elif(data[0] < 7*color_width and data[0] >= 6*color_width)
+                    else:
+                        red = 0xee
+                        green = 0x82
+                        blue = 0xee
+
+                    #if int(data[0]) > 600:
+                    #    red = 0
+                    #    green = 0
+                    #    blue = 255
+                    #else:
+                    #    red = 0
+                    #    green = 255
+                    #    blue = 0
+                    self.set_output(1,red,green,blue,255)
+                except:
+                    pass
 
     def set_output(self,comm,red,green,blue,mote):
         bmsg = RadioCountMsg.RadioCountMsg()
