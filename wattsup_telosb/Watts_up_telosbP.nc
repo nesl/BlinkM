@@ -68,7 +68,12 @@ implementation
         uint8_t get_input[8] = {'#','L','W',3,'E',1,1,';'};
         uint8_t iter;
         uint8_t serial_in[255];
-        uint8_t converted_int;
+        uint8_t counter = 0;
+        uint16_t converted_int; 
+        uint16_t power;
+        char value[5];
+
+        uint8_t num_digits = iter;
 
         switch(state) {
             case 0:
@@ -91,22 +96,43 @@ implementation
                     while(call UartByte.receive(&serial_in[iter],10) == FAIL)
                     {
                     } 
-                    if(serial_in[iter] == ',')
-                    {
-                        printf("\n");
-                    } 
-                    else 
-                    {
-                         
-                        converted_int = serial_in[iter]-'0'; 
-                        printf("%i", converted_int);
-                        
-                    //    printf("%c",serial_in[iter]);
-                    }
                     iter++;
-                    printfflush();
                 } while(serial_in[iter-1] != '\n') ;
+                for(counter = 0; counter < 58; counter++)
+                    printf("%c",serial_in[counter]);
+                iter = 0;
+
+                for(counter = 0; counter < 58; counter++)
+                {
+                    if(iter == 3)
+                    {
+                        iter = 0; //use iter as new counter for number of digits in power
+                        while(serial_in[counter] != ',')
+                        {
+                            value[iter] = serial_in[counter];
+                            counter++;
+                            iter++;
+                        }
+                        converted_int = 0;
+                        power = 1;
+                        num_digits = iter;
+                        for(counter = 0; counter < num_digits; counter++)
+                        {
+                            converted_int += (value[iter-1]-'0')*power;
+                            power *= 10;
+                            iter--;
+                        }
+                        printf("Power: %d",converted_int);
+                        printfflush();
+                        iter = 0;
+                        break;
+                    }
+                    if(serial_in[counter] == ',')
+                        iter++;
+                }
+                 
                 printf("Done\n");
+                printfflush();
                 break;
         }
         printfflush();
@@ -125,8 +151,6 @@ implementation
 
     event void Resource.granted()
     {
-        uint8_t iter;
-        uint8_t serial_in[255];
         uint8_t serial_out[23]= {'#','C','W',18,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,';'};
         call Leds.led0Toggle();
         if(call UartStream.send(serial_out,23) == FAIL)
