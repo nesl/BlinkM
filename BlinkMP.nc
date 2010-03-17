@@ -16,8 +16,16 @@ implementation
     uint16_t BlinkM_Addr = 0x09;
 
     /* Specifies the state (currently in which function)  
-    * 255 = idle state                                  
-    * 0 = set_rgb_color; 1 = get_current_rgb_color    */
+    * state     command
+    * 0         set_rgb_color 
+    * 1         fade_to_rgb_color    
+    * 2         fade_to_hsb_color
+    * 3         Reserved
+    * 4         Reserved 
+    * 5         get_rgb_color
+    * 6         set_fade_speed
+    * 7         stop_script
+    * 255       idle state */
     uint8_t state = 255;
 
     /* data pointers */ 
@@ -132,6 +140,8 @@ implementation
         return SUCCESS;
     }
 
+    /* This command tells the BlinkM to stop playing a script
+     * Note: The BlinkM comes playing a default script */ 
     command error_t BlinkM.stop_script()
     {
         if(check_state() == FAIL)
@@ -224,7 +234,6 @@ implementation
                 {
                     state = 255;
                 }
-                        
                 switch(dup_state)
                 {
                     case 0:
