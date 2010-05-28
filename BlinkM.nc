@@ -1,4 +1,3 @@
-
 interface BlinkM
 {
     /* This command sets the BlinkM to an RGB color immediately */ 

@@ -1,10 +1,5 @@
 #!/usr/bin/env "python -W ignore::DeprecationWarning"
 
-"""
-parameters:
-    - the first parameter to this application is a MOTECOM string.
-"""
-
 import sys
 import time
 import signal
@@ -25,14 +20,14 @@ class BlinkMRadio:
     def __init__(self, motestring):
 
         ### start tos mote interface
-        self.mif = MoteIF.MoteIF()
-        self.tos_source = self.mif.addSource(motestring)
-        self.mif.addListener(self, RadioCountMsg.RadioCountMsg)
-        power_range = 11000
-        num_colors = 7
-        color_width= power_range/num_colors
-        print "color_width: ",color_width
-        ser = serial.Serial('/dev/ttyUSB2', 115200, timeout=1)
+#        self.mif = MoteIF.MoteIF()
+#        self.tos_source = self.mif.addSource(motestring)
+#        self.mif.addListener(self, RadioCountMsg.RadioCountMsg)
+#        power_range = 11000
+#        num_colors = 7
+#        color_width= power_range/num_colors
+#        print "color_width: ",color_width
+        ser = serial.Serial('/dev/ttyUSB1', 115200, timeout=1)
         ser.write('#C,W,18,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1;')
         ser.write('#L,W,3,E,1,1;')
 
@@ -73,20 +68,11 @@ class BlinkMRadio:
                         red = 0x4b
                         green = 0x00
                         blue = 0x82
-                    #elif(data[0] < 7*color_width and data[0] >= 6*color_width)
                     else:
                         red = 0xee
                         green = 0x82
                         blue = 0xee
 
-                    #if int(data[0]) > 600:
-                    #    red = 0
-                    #    green = 0
-                    #    blue = 255
-                    #else:
-                    #    red = 0
-                    #    green = 255
-                    #    blue = 0
                     self.set_output(1,red,green,blue,255)
                 except:
                     pass

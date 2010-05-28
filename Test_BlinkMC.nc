@@ -16,7 +16,7 @@ implementation
         color = 0;
         state = 0;
         call BlinkM.stop_script();
-        call Timer.startPeriodic(2000);
+        call Timer.startPeriodic(5000);
         call BlinkM.set_fade_speed(10);
     }
 
@@ -25,12 +25,12 @@ implementation
     {
         if(state == 0)
         {
-            call BlinkM.fade_to_rgb_color(255,140,0x00);
+            call BlinkM.fade_to_rgb_color(0xff,0x00,0x00);
             
         }
         else if(state == 1)
         {
-            call BlinkM.fade_to_rgb_color(0x00,0xff,0x00);
+            call BlinkM.fade_to_rgb_color(0x00,0x00,0xff);
         }
     }
 

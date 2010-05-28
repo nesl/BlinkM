@@ -1,9 +1,10 @@
+// Watts up telosb implementation
 /*
- */
-
+*/ 
 /*
- */
-#include "printf.h" /* Used to print out the data to the computer */ 
+*/
+#include "printf.h" 
+#include "Watts_up_telosb.h"
 
 
 module Watts_up_telosbP
@@ -12,13 +13,18 @@ module Watts_up_telosbP
     uses interface UartStream;
     uses interface Resource; 
     uses interface Leds;
+    uses interface AMSend;
+    uses interface SplitControl as AMControl;
+    uses interface Packet;
     provides interface Watts_up_telosb;
     provides interface Msp430UartConfigure;
 }
 implementation
 {
     uint8_t state = 0;
-    
+    message_t pkt;
+    bool locked;
+
     /*****************************************************
                             Functions  
     *****************************************************/
@@ -34,6 +40,76 @@ implementation
             power *= 10;
         }
         return converted_int;
+    }
+
+    /* Changes the color of the BlinkM's based on the value of power */ 
+    void change_color(uint16_t power)
+    {
+        uint8_t red, green, blue;
+        uint16_t power_range = 11000;
+        uint8_t num_colors = 7;
+        uint16_t color_width = power_range/num_colors; 
+        watts_up_msg_t *wupkt; 
+
+        if(power < color_width)
+        {
+            red = 0xff;
+            green = 0x00;
+            blue = 0x00;
+        }
+        else if(power < 2*color_width && power >= color_width)
+        {
+            red = 0xff;
+            green = 0xa5;
+            blue = 0x00;
+        }
+        else if(power < 3*color_width && power >=
+               2*color_width)
+        {
+            red = 0xff;
+            green = 0xff;
+            blue = 0x00;
+        }   
+        else if(power < 4*color_width && power >=
+               3*color_width)
+        {
+            red = 0x00;
+            green = 0x80;
+            blue = 0x00;
+        }
+        else if(power < 5*color_width && power >=
+               4*color_width)
+        {
+            red = 0x00;
+            green = 0x00;
+            blue = 0xff;
+        }
+        else if(power < 6*color_width && power >=
+               5*color_width)
+        {
+            red = 0x4b;
+            green = 0x00;
+            blue = 0x82;
+        }
+        else
+        {
+            red = 0xee;
+            green = 0x82;
+            blue = 0xee;
+        }
+        wupkt = (watts_up_msg_t*)(call Packet.getPayload(&pkt,sizeof(watts_up_msg_t)));
+        if(wupkt == NULL)
+            return;
+        
+        wupkt->comm = 'n';
+        wupkt->red = red;
+        wupkt->green = green;
+        wupkt->blue = blue;
+
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(watts_up_msg_t));
+    
+         
+   
     }
 
 
@@ -127,6 +203,9 @@ implementation
         printf("Power: %d\n",serial_int_values[3]);
         printfflush();
 
+        /* Change color based on power usage */ 
+        change_color(serial_int_values[3]);
+
     } 
 
     /*****************************************************
@@ -173,6 +252,31 @@ implementation
         printfflush();
  
     } 
- 
+
+    event void AMControl.startDone(error_t err) 
+    {
+        if (err == SUCCESS) 
+        {
+            // call MilliTimer.startPeriodic(2000);
+        }
+        else 
+        {
+            call AMControl.start();
+        }
+    }
+
+    event void AMControl.stopDone(error_t err) 
+    {
+        // do nothing
+    }
+
+    event void AMSend.sendDone(message_t* bufPtr, error_t error) 
+    {
+        if (&pkt == bufPtr) 
+        {
+            locked = FALSE;
+        }
+    }
+
 }
  
